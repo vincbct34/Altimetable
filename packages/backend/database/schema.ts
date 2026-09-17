@@ -7,6 +7,48 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class EventSchema extends BaseModel {
+  static $columns = ['category', 'createdAt', 'description', 'endDate', 'id', 'startDate', 'title', 'updatedAt'] as const
+  $columns = EventSchema.$columns
+  @column()
+  declare category: any
+  @column.dateTime()
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column.dateTime()
+  declare endDate: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare startDate: DateTime
+  @column()
+  declare title: string
+  @column.dateTime()
+  declare updatedAt: DateTime
+}
+
+export class PrismaMigrationSchema extends BaseModel {
+  static $columns = ['appliedStepsCount', 'checksum', 'finishedAt', 'id', 'logs', 'migrationName', 'rolledBackAt', 'startedAt'] as const
+  $columns = PrismaMigrationSchema.$columns
+  @column()
+  declare appliedStepsCount: number
+  @column()
+  declare checksum: string
+  @column.dateTime()
+  declare finishedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare logs: string | null
+  @column()
+  declare migrationName: string
+  @column.dateTime()
+  declare rolledBackAt: DateTime | null
+  @column.dateTime()
+  declare startedAt: DateTime
+}
+
 export class AuthAccessTokenSchema extends BaseModel {
   static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
