@@ -1,0 +1,16 @@
+{
+  "name": "altimetable",
+  "version": "1.0.0",
+  "description": "Website to visualize apprenticeship's planning.",
+  "workspaces": ["./packages/*"],
+  "homepage": "https://github.com/vincbct34/Altimetable#readme",
+  "bugs": {
+    "url": "https://github.com/vincbct34/Altimetable/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vincbct34/Altimetable.git"
+  },
+  "license": "MIT",
+  "author": "Vincent Bichat <vincent260705@gmail.com>"
+}
