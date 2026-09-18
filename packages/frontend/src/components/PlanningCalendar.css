@@ -1,0 +1,84 @@
+.planning-calendar {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.planning-calendar-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.planning-calendar-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.planning-calendar-toolbar-actions > button {
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.planning-calendar-toolbar-actions > button:hover {
+  border-color: var(--accent);
+}
+
+.planning-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+.planning-calendar-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planning-calendar-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.planning-calendar-loading,
+.planning-calendar-error {
+  margin: 0;
+  color: var(--text);
+}
+
+.planning-calendar .rbc-calendar {
+  color: var(--text-h);
+}
+
+.planning-calendar .rbc-off-range-bg {
+  background: var(--code-bg);
+}
+
+.planning-calendar .rbc-today {
+  background-color: var(--accent-bg);
+}
+
+.planning-calendar .rbc-event {
+  border: none;
+}
