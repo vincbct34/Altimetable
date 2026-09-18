@@ -8,7 +8,15 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class EventSchema extends BaseModel {
-  static $columns = ['createdAt', 'endDate', 'id', 'startDate', 'title', 'type', 'updatedAt'] as const
+  static $columns = [
+    'createdAt',
+    'endDate',
+    'id',
+    'startDate',
+    'title',
+    'type',
+    'updatedAt',
+  ] as const
   $columns = EventSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
