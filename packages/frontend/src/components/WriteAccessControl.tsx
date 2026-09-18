@@ -1,50 +1,50 @@
-import { useState } from "react";
-import "./WriteAccessControl.css";
+import { useState } from 'react'
+import './WriteAccessControl.css'
 
 interface WriteAccessControlProps {
-  isUnlocked: boolean;
-  onUnlock: (token: string) => void;
-  onLock: () => void;
+  isUnlocked: boolean
+  onUnlock: (token: string) => void
+  onLock: () => void
 }
 
-export function WriteAccessControl({
-  isUnlocked,
-  onUnlock,
-  onLock,
-}: WriteAccessControlProps) {
-  const [pendingToken, setPendingToken] = useState("");
-  const [isEditingToken, setIsEditingToken] = useState(false);
+export function WriteAccessControl({ isUnlocked, onUnlock, onLock }: WriteAccessControlProps) {
+  const [pendingToken, setPendingToken] = useState('')
+  const [isEditingToken, setIsEditingToken] = useState(false)
 
   if (isUnlocked) {
     return (
       <div className="write-access-control">
-        <span className="write-access-status">Editing unlocked</span>
+        <span className="write-access-status">
+          <span className="write-access-ring write-access-ring-filled" aria-hidden="true" />
+          Editing unlocked
+        </span>
         <button type="button" onClick={onLock}>
           Lock
         </button>
       </div>
-    );
+    )
   }
 
   if (!isEditingToken) {
     return (
       <div className="write-access-control">
         <button type="button" onClick={() => setIsEditingToken(true)}>
+          <span className="write-access-ring" aria-hidden="true" />
           Unlock editing
         </button>
       </div>
-    );
+    )
   }
 
   return (
     <form
       className="write-access-control"
       onSubmit={(e) => {
-        e.preventDefault();
-        if (!pendingToken.trim()) return;
-        onUnlock(pendingToken.trim());
-        setPendingToken("");
-        setIsEditingToken(false);
+        e.preventDefault()
+        if (!pendingToken.trim()) return
+        onUnlock(pendingToken.trim())
+        setPendingToken('')
+        setIsEditingToken(false)
       }}
     >
       <input
@@ -59,5 +59,5 @@ export function WriteAccessControl({
         Cancel
       </button>
     </form>
-  );
+  )
 }
