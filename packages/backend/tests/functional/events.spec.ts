@@ -1,7 +1,10 @@
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 import testUtils from '@adonisjs/core/services/test_utils'
+import env from '#start/env'
 import Event from '#models/event'
+
+const writeAccessToken = env.get('WRITE_ACCESS_TOKEN').release()
 
 test.group('Events resource', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -22,7 +25,7 @@ test.group('Events resource', (group) => {
   })
 
   test('store creates a new event', async ({ client, assert }) => {
-    const response = await client.post('/events').json({
+    const response = await client.post('/events').bearerToken(writeAccessToken).json({
       title: 'Company sprint',
       type: 'company',
       startDate: '2026-02-02',
@@ -37,8 +40,30 @@ test.group('Events resource', (group) => {
     assert.equal(event.title, 'Company sprint')
   })
 
-  test('store rejects a type outside the enum', async ({ client }) => {
+  test('store rejects a request without an access token', async ({ client }) => {
     const response = await client.post('/events').json({
+      title: 'Company sprint',
+      type: 'company',
+      startDate: '2026-02-02',
+      endDate: '2026-02-06',
+    })
+
+    response.assertStatus(401)
+  })
+
+  test('store rejects a request with the wrong access token', async ({ client }) => {
+    const response = await client.post('/events').bearerToken('not-the-right-token').json({
+      title: 'Company sprint',
+      type: 'company',
+      startDate: '2026-02-02',
+      endDate: '2026-02-06',
+    })
+
+    response.assertStatus(401)
+  })
+
+  test('store rejects a type outside the enum', async ({ client }) => {
+    const response = await client.post('/events').bearerToken(writeAccessToken).json({
       title: 'Broken event',
       type: 'not-a-type',
       startDate: '2026-02-02',
@@ -49,7 +74,7 @@ test.group('Events resource', (group) => {
   })
 
   test('store rejects a missing title', async ({ client }) => {
-    const response = await client.post('/events').json({
+    const response = await client.post('/events').bearerToken(writeAccessToken).json({
       type: 'school',
       startDate: '2026-02-02',
       endDate: '2026-02-06',
@@ -86,7 +111,7 @@ test.group('Events resource', (group) => {
       endDate: DateTime.fromISO('2026-04-10'),
     })
 
-    const response = await client.put(`/events/${event.id}`).json({
+    const response = await client.put(`/events/${event.id}`).bearerToken(writeAccessToken).json({
       title: 'Updated holiday',
       type: 'holiday',
       startDate: '2026-04-01',
@@ -97,8 +122,26 @@ test.group('Events resource', (group) => {
     response.assertBodyContains({ title: 'Updated holiday' })
   })
 
+  test('update rejects a request without an access token', async ({ client }) => {
+    const event = await Event.create({
+      title: 'Holiday',
+      type: 'holiday',
+      startDate: DateTime.fromISO('2026-04-01'),
+      endDate: DateTime.fromISO('2026-04-10'),
+    })
+
+    const response = await client.put(`/events/${event.id}`).json({
+      title: 'Updated holiday',
+      type: 'holiday',
+      startDate: '2026-04-01',
+      endDate: '2026-04-12',
+    })
+
+    response.assertStatus(401)
+  })
+
   test('update returns 404 for a missing event', async ({ client }) => {
-    const response = await client.put('/events/999999').json({
+    const response = await client.put('/events/999999').bearerToken(writeAccessToken).json({
       title: 'Updated holiday',
       type: 'holiday',
       startDate: '2026-04-01',
@@ -116,15 +159,28 @@ test.group('Events resource', (group) => {
       endDate: DateTime.fromISO('2026-05-01'),
     })
 
-    const deleteResponse = await client.delete(`/events/${event.id}`)
+    const deleteResponse = await client.delete(`/events/${event.id}`).bearerToken(writeAccessToken)
     deleteResponse.assertStatus(200)
 
     const showResponse = await client.get(`/events/${event.id}`)
     showResponse.assertStatus(404)
   })
 
+  test('destroy rejects a request without an access token', async ({ client }) => {
+    const event = await Event.create({
+      title: 'Other event',
+      type: 'other',
+      startDate: DateTime.fromISO('2026-05-01'),
+      endDate: DateTime.fromISO('2026-05-01'),
+    })
+
+    const response = await client.delete(`/events/${event.id}`)
+
+    response.assertStatus(401)
+  })
+
   test('destroy returns 404 for a missing event', async ({ client }) => {
-    const response = await client.delete('/events/999999')
+    const response = await client.delete('/events/999999').bearerToken(writeAccessToken)
 
     response.assertStatus(404)
   })

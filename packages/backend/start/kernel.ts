@@ -37,3 +37,11 @@ router.use([
   () => import('@adonisjs/session/session_middleware'),
   () => import('@adonisjs/shield/shield_middleware'),
 ])
+
+/**
+ * Named middleware collection must be explicitly assigned to
+ * the routes or the routes group.
+ */
+export const middleware = router.named({
+  writeAccess: () => import('#middleware/write_access_middleware'),
+})

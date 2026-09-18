@@ -9,9 +9,13 @@
 
 import router from '@adonisjs/core/services/router'
 import { controllers } from '#generated/controllers'
+import { middleware } from '#start/kernel'
 
 router.get('/', () => {
   return { hello: 'world' }
 })
 
-router.resource('events', controllers.Events).apiOnly()
+router
+  .resource('events', controllers.Events)
+  .apiOnly()
+  .middleware(['store', 'update', 'destroy'], middleware.writeAccess())
