@@ -8,85 +8,20 @@ import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
 export class EventSchema extends BaseModel {
-  static $columns = ['category', 'createdAt', 'description', 'endDate', 'id', 'startDate', 'title', 'updatedAt'] as const
+  static $columns = ['createdAt', 'endDate', 'id', 'startDate', 'title', 'type', 'updatedAt'] as const
   $columns = EventSchema.$columns
-  @column()
-  declare category: any
-  @column.dateTime()
-  declare createdAt: DateTime
-  @column()
-  declare description: string | null
-  @column.dateTime()
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column.date()
   declare endDate: DateTime
   @column({ isPrimary: true })
-  declare id: string
-  @column.dateTime()
+  declare id: number
+  @column.date()
   declare startDate: DateTime
   @column()
   declare title: string
-  @column.dateTime()
-  declare updatedAt: DateTime
-}
-
-export class PrismaMigrationSchema extends BaseModel {
-  static $columns = ['appliedStepsCount', 'checksum', 'finishedAt', 'id', 'logs', 'migrationName', 'rolledBackAt', 'startedAt'] as const
-  $columns = PrismaMigrationSchema.$columns
   @column()
-  declare appliedStepsCount: number
-  @column()
-  declare checksum: string
-  @column.dateTime()
-  declare finishedAt: DateTime | null
-  @column({ isPrimary: true })
-  declare id: string
-  @column()
-  declare logs: string | null
-  @column()
-  declare migrationName: string
-  @column.dateTime()
-  declare rolledBackAt: DateTime | null
-  @column.dateTime()
-  declare startedAt: DateTime
-}
-
-export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
-  $columns = AuthAccessTokenSchema.$columns
-  @column()
-  declare abilities: string
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime | null
-  @column.dateTime()
-  declare expiresAt: DateTime | null
-  @column()
-  declare hash: string
-  @column({ isPrimary: true })
-  declare id: number
-  @column.dateTime()
-  declare lastUsedAt: DateTime | null
-  @column()
-  declare name: string | null
-  @column()
-  declare tokenableId: number
-  @column()
-  declare type: string
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
-}
-
-export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
-  $columns = UserSchema.$columns
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column()
-  declare email: string
-  @column()
-  declare fullName: string | null
-  @column({ isPrimary: true })
-  declare id: number
-  @column({ serializeAs: null })
-  declare password: string
+  declare type: 'school' | 'company' | 'holiday' | 'exam' | 'other'
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
