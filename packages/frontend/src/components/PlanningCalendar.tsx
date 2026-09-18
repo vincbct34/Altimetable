@@ -18,7 +18,9 @@ import { EventForm } from './EventForm'
 import './PlanningCalendar.css'
 
 const localizer = luxonLocalizer(DateTime, { firstDayOfWeek: 1 })
-const views: View[] = ['month', 'week', 'agenda']
+// No "week" view: every event here is all-day, so react-big-calendar's week
+// view would just show an empty hour-by-hour grid with nothing timed on it.
+const views: View[] = ['month', 'agenda']
 
 interface CalendarEvent {
   title: string
@@ -43,16 +45,56 @@ function addDays(date: Date, days: number): Date {
   return result
 }
 
-function toCalendarEvent(event: ApiEvent): CalendarEvent {
-  return {
+function isWeekend(date: Date): boolean {
+  const day = date.getDay()
+  return day === 0 || day === 6
+}
+
+// Splits a date range into its consecutive weekday-only runs, so a period
+// spanning several weeks (e.g. a month-long company block) renders as one
+// bar per work-week instead of one bar that visually paints through the
+// weekends in between — nobody is at school or the company on a Saturday.
+function weekdayRuns(start: Date, end: Date): Array<{ start: Date; end: Date }> {
+  const runs: Array<{ start: Date; end: Date }> = []
+  let runStart: Date | null = null
+  let cursor = new Date(start)
+
+  while (cursor <= end) {
+    if (isWeekend(cursor)) {
+      if (runStart) {
+        runs.push({ start: runStart, end: addDays(cursor, -1) })
+        runStart = null
+      }
+    } else if (!runStart) {
+      runStart = new Date(cursor)
+    }
+    cursor = addDays(cursor, 1)
+  }
+  if (runStart) {
+    runs.push({ start: runStart, end: addDays(cursor, -1) })
+  }
+  return runs
+}
+
+function toCalendarEvents(event: ApiEvent): CalendarEvent[] {
+  const start = parseDateOnly(event.startDate)
+  const end = parseDateOnly(event.endDate)
+  // react-big-calendar treats an all-day event's end as exclusive,
+  // so the inclusive endDate from the API needs a day added to render fully.
+
+  // Holidays are specific calendar days regardless of weekday (some public
+  // holidays land on a Saturday), so they're never split.
+  if (event.type === 'holiday') {
+    return [{ title: event.title, start, end: addDays(end, 1), allDay: true, resource: event }]
+  }
+
+  return weekdayRuns(start, end).map((run) => ({
     title: event.title,
-    // react-big-calendar treats an all-day event's end as exclusive,
-    // so the inclusive endDate from the API needs a day added to render fully.
-    start: parseDateOnly(event.startDate),
-    end: addDays(parseDateOnly(event.endDate), 1),
+    start: run.start,
+    end: addDays(run.end, 1),
     allDay: true,
     resource: event,
-  }
+  }))
 }
 
 function EventContent({ event }: { event: CalendarEvent }) {
@@ -64,11 +106,26 @@ function EventContent({ event }: { event: CalendarEvent }) {
   )
 }
 
+// react-big-calendar's agenda view decorates this label with « / » to show
+// whether an event continues from/into an adjacent day. Every event here is
+// all-day already, and with two overlapping events on the same date (e.g. a
+// multi-week company block plus a public holiday) the two continuation states
+// can differ, so the same date shows two inconsistent-looking labels. Always
+// rendering a plain "All day" avoids that confusing, broken-looking mismatch.
+function AgendaTime() {
+  return <>All day</>
+}
+
 export function PlanningCalendar() {
   const { token, isUnlocked, unlock, lock } = useWriteAccess()
   const [events, setEvents] = useState<ApiEvent[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [formState, setFormState] = useState<FormState | null>(null)
+  // react-big-calendar's own uncontrolled date/view state (via the `uncontrollable`
+  // package) doesn't propagate re-renders under React 19, so Month/Week/Agenda and
+  // Today/Back/Next silently no-op unless date/view are controlled here instead.
+  const [calendarDate, setCalendarDate] = useState(new Date())
+  const [calendarView, setCalendarView] = useState<View>('month')
 
   const loadEvents = useCallback(async () => {
     try {
@@ -91,7 +148,7 @@ export function PlanningCalendar() {
       })
   }, [])
 
-  const calendarEvents = useMemo(() => (events ?? []).map(toCalendarEvent), [events])
+  const calendarEvents = useMemo(() => (events ?? []).flatMap(toCalendarEvents), [events])
 
   const handleSelectSlot = useCallback(
     (slot: SlotInfo) => {
@@ -159,10 +216,13 @@ export function PlanningCalendar() {
         startAccessor="start"
         endAccessor="end"
         views={views}
-        defaultView="month"
-        components={{ event: EventContent }}
+        components={{ event: EventContent, agenda: { time: AgendaTime } }}
         tooltipAccessor={(event) => `${event.title} (${eventTypeLabels[event.resource.type]})`}
         style={{ height: 'calc(100vh - 260px)' }}
+        date={calendarDate}
+        view={calendarView}
+        onNavigate={setCalendarDate}
+        onView={setCalendarView}
         selectable={isUnlocked}
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}

@@ -128,6 +128,34 @@
   border-color: var(--rule);
 }
 
+.planning-calendar .rbc-agenda-table thead > tr > th {
+  border-color: var(--rule);
+}
+
+.planning-calendar .rbc-agenda-table tbody > tr > td + td {
+  border-left: 1px solid var(--rule);
+}
+
+/* The table uses border-collapse. RBC's own row-level divider (`tr + tr`)
+   loses out to nothing once a date is shared by several events — that
+   date's cell gets a rowspan, so the row boundary between its events no
+   longer has a matching cell on the date column to collapse against, and
+   the line stops short instead of crossing the full row. Setting the
+   divider on the cells themselves — the highest-priority border in the
+   collapse algorithm — makes every row boundary render consistently
+   regardless of rowspan. */
+.planning-calendar .rbc-agenda-table tbody tr + tr > .rbc-agenda-time-cell,
+.planning-calendar .rbc-agenda-table tbody tr + tr > .rbc-agenda-event-cell {
+  border-top: 1px solid var(--rule);
+}
+
+/* A date shared by several events gets one rowspan-ed date cell, but that
+   cell only borders the LAST event row it spans — so the boundary between
+   this date's group and the next date needs its own explicit bottom edge. */
+.planning-calendar .rbc-agenda-date-cell {
+  border-bottom: 1px solid var(--rule);
+}
+
 .planning-calendar .rbc-header {
   font-family: var(--mono);
   font-size: 11px;
@@ -166,6 +194,14 @@
 
 .planning-calendar .rbc-event.rbc-selected {
   background: var(--paper);
+}
+
+/* RBC injects "«"/"»" via CSS on continuation state regardless of what the
+   agenda `time` component renders, so the component override alone can't
+   remove it — it has to be neutralized here too. */
+.planning-calendar .rbc-agenda-time-cell .rbc-continues-after::after,
+.planning-calendar .rbc-agenda-time-cell .rbc-continues-prior::before {
+  content: none;
 }
 
 .planning-calendar .rbc-show-more {
